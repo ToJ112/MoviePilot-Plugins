@@ -1,0 +1,14 @@
+{
+    "StrmServerRefresh": {
+        "name": "转移后strm落文件并刷新库",
+        "description": "入库后自动生成strm并更新Emby/Jellyfin/Plex服务器海报墙。",
+        "labels": "媒体库",
+        "version": "0.0.1",
+        "icon": "refresh.png",
+        "author": "jtning",
+        "level": 1,
+        "history": {
+            "v0.0.1": "添加strm生成"
+        }
+    }
+}
