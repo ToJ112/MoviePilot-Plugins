@@ -11,23 +11,23 @@ from app.schemas import TransferInfo, RefreshMediaItem, ServiceInfo
 from app.schemas.types import EventType
 
 
-class MediaServerRefresh(_PluginBase):
+class StrmServerRefresh(_PluginBase):
     # 插件名称
-    plugin_name = "媒体库服务器刷新"
+    plugin_name = "转移后strm落文件并刷新库"
     # 插件描述
-    plugin_desc = "入库后自动刷新Emby/Jellyfin/Plex服务器海报墙。"
+    plugin_desc = "入库后自动生成strm并更新Emby/Jellyfin/Plex服务器海报墙。"
     # 插件图标
-    plugin_icon = "refresh2.png"
+    plugin_icon = "refresh.png"
     # 插件版本
-    plugin_version = "1.3.1"
+    plugin_version = "0.0.1"
     # 插件作者
-    plugin_author = "jxxghp"
+    plugin_author = "jtning"
     # 作者主页
-    author_url = "https://github.com/jxxghp"
+    author_url = "https://github.com/TOJ112"
     # 插件配置项ID前缀
-    plugin_config_prefix = "mediaserverrefresh_"
+    plugin_config_prefix = "strmserverrefresh_"
     # 加载顺序
-    plugin_order = 14
+    plugin_order = 99
     # 可使用的用户级别
     auth_level = 1
 
@@ -43,6 +43,8 @@ class MediaServerRefresh(_PluginBase):
             self._enabled = config.get("enabled")
             self._delay = config.get("delay") or 0
             self._mediaservers = config.get("mediaservers") or []
+            self._strmpath = config.get("strm_path")
+            self._alistpath = config.get("alist_path")
 
     @property
     def service_infos(self) -> Optional[Dict[str, ServiceInfo]]:
@@ -130,6 +132,21 @@ class MediaServerRefresh(_PluginBase):
                                             'items': [{"title": config.name, "value": config.name}
                                                       for config in self.mediaserver_helper.get_configs().values()]
                                         }
+                                    }, {
+                                        'component': 'VCol',
+                                        'props': {
+                                            'cols': 12,
+                                        },
+                                        'content': [
+                                            {
+                                                'component': 'VTextField',
+                                                'props': {
+                                                    'model': 'delay',
+                                                    'label': '延迟时间（秒）',
+                                                    'placeholder': '0'
+                                                }
+                                            }
+                                        ]
                                     }
                                 ]
                             }
@@ -147,9 +164,24 @@ class MediaServerRefresh(_PluginBase):
                                     {
                                         'component': 'VTextField',
                                         'props': {
-                                            'model': 'delay',
-                                            'label': '延迟时间（秒）',
-                                            'placeholder': '0'
+                                            'model': 'strm_path',
+                                            'label': 'strm目标地址',
+                                            'placeholder': '/LINK'
+                                        }
+                                    }
+                                ]
+                            }, {
+                                'component': 'VCol',
+                                'props': {
+                                    'cols': 12,
+                                },
+                                'content': [
+                                    {
+                                        'component': 'VTextField',
+                                        'props': {
+                                            'model': 'alist_path',
+                                            'label': 'alist替换地址',
+                                            'placeholder': 'http://xx.xx:5244/d/115'
                                         }
                                     }
                                 ]
@@ -182,16 +214,23 @@ class MediaServerRefresh(_PluginBase):
         if not self.service_infos:
             return
 
-        if self._delay:
-            logger.info(f"延迟 {self._delay} 秒后刷新媒体库... ")
-            time.sleep(float(self._delay))
-
         # 入库数据
         transferinfo: TransferInfo = event_info.get("transferinfo")
         if not transferinfo or not transferinfo.target_diritem or not transferinfo.target_diritem.path:
             return
 
+        if self._strmpath:
+            strm_content = self.__format_content(file_path=str(transferinfo.target_diritem.path))
+            self.__gen_strm()
+            # 生成strm文件
+            # self.__create_strm_file(strm_file=target_file,
+            #                         strm_content=strm_content)
+        if self._delay:
+            logger.info(f"延迟 {self._delay} 秒后刷新媒体库... ")
+            time.sleep(float(self._delay))
+
         mediainfo: MediaInfo = event_info.get("mediainfo")
+
         items = [
             RefreshMediaItem(
                 title=mediainfo.title,
@@ -220,4 +259,12 @@ class MediaServerRefresh(_PluginBase):
         """
         退出插件
         """
+        pass
+
+    def __format_content(self, file_path):
+        logger.error(f"当前filepath: {file_path}")
+        pass
+
+    def __gen_strm(self):
+        logger.error(f"读取到的")
         pass
